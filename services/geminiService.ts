@@ -2,9 +2,16 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { InventoryItem, MerchandisingSuggestion, AnalysisResult } from "../types";
 
+const getAIInstance = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey || apiKey.trim() === "") {
+    throw new Error("Missing Gemini API Key. Please set the API_KEY environment variable in your deployment settings.");
+  }
+  return new GoogleGenAI({ apiKey });
+};
+
 export const analyzeInventory = async (photos: { base64: string }[]): Promise<AnalysisResult> => {
-  // Create instance right before use to ensure up-to-date environment variables
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAIInstance();
   const model = "gemini-3-flash-preview";
   
   const imageParts = photos.map(photo => ({
@@ -91,8 +98,7 @@ export const analyzeInventory = async (photos: { base64: string }[]): Promise<An
 };
 
 export const generateMockup = async (suggestion: MerchandisingSuggestion): Promise<string> => {
-  // Create instance right before use
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAIInstance();
   const model = 'gemini-2.5-flash-image';
   const prompt = `A professional high-quality 3D render of a retail clothing store display for a high-end brand. 
   The display shows: ${suggestion.title}. 

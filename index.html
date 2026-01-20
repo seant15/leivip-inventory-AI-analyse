@@ -10,21 +10,36 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
-        // Critical shim for process.env to prevent ReferenceErrors in browser environments
-        window.process = window.process || { env: {} };
-        // If API_KEY is not defined by the environment, ensure it doesn't cause a crash on instantiation
-        if (typeof window.process.env.API_KEY === 'undefined') {
-            window.process.env.API_KEY = ''; 
-        }
+        // Robust process shim for browser environments
         window.global = window;
+        window.process = window.process || { env: {} };
+        window.process.env = window.process.env || {};
+        
+        // Use a getter to dynamically check for the key, avoiding hard-coded empty strings 
+        // that can trigger SDK validation errors prematurely.
+        if (typeof window.process.env.API_KEY === 'undefined') {
+            Object.defineProperty(window.process.env, 'API_KEY', {
+                get: function() { 
+                    // This will return undefined or the actual value if injected later
+                    return window._VITE_API_KEY_ || ""; 
+                }
+            });
+        }
     </script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
+            margin: 0;
+            padding: 0;
         }
-        /* Hide scrollbar but keep functionality */
+        /* Ensure the root is visible */
+        #root {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -34,52 +49,28 @@
         }
 
         @media print {
-            body {
-                background-color: white !important;
-                color: black !important;
-            }
-            nav, header, button, .no-print {
-                display: none !important;
-            }
-            .print-only {
-                display: block !important;
-            }
-            main {
-                padding: 0 !important;
-                margin: 0 !important;
-                max-width: 100% !important;
-            }
+            body { background-color: white !important; color: black !important; }
+            nav, header, button, .no-print { display: none !important; }
+            main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
             .bg-slate-900, .bg-slate-950, .bg-slate-800 {
                 background-color: white !important;
                 border: 1px solid #e2e8f0 !important;
                 color: black !important;
                 box-shadow: none !important;
             }
-            .text-slate-400, .text-slate-500 {
-                color: #64748b !important;
-            }
-            .text-white, .text-slate-100 {
-                color: black !important;
-            }
-            .shadow-xl, .shadow-lg {
-                box-shadow: none !important;
-            }
-            canvas {
-                max-width: 100% !important;
-            }
         }
     </style>
 <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom": "https://esm.sh/react-dom@^19.2.3",
-    "react-dom/client": "https://esm.sh/react-dom@^19.2.3/client",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.37.0",
-    "recharts": "https://esm.sh/recharts@^3.6.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "@google/genai": "https://esm.sh/@google/genai@1.3.0",
+    "recharts": "https://esm.sh/recharts@2.15.0",
+    "lucide-react": "https://esm.sh/lucide-react@0.460.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
 </script>
