@@ -8,7 +8,7 @@ import AnalysisScreen from './screens/AnalysisScreen';
 import ReorganizeScreen from './screens/ReorganizeScreen';
 import ReportScreen from './screens/ReportScreen';
 import { analyzeInventory } from './services/geminiService';
-import { AlertCircle, Key } from 'lucide-react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<AppStep>(AppStep.CAPTURE);
@@ -50,19 +50,6 @@ const App: React.FC = () => {
     if (step === AppStep.REORGANIZE && suggestions.length === 0) return;
     if (step === AppStep.REPORT && items.length === 0) return;
     setCurrentStep(step);
-  };
-
-  const handleManualKeyTrigger = async () => {
-    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
-      try {
-        await window.aistudio.openSelectKey();
-        setError(null);
-      } catch (err) {
-        console.error("Failed to open key selector", err);
-      }
-    } else {
-      alert("Please ensure your Gemini API_KEY is correctly set in your Vercel project settings and the app is redeployed.");
-    }
   };
 
   const renderScreen = () => {
@@ -107,14 +94,19 @@ const App: React.FC = () => {
             <AlertCircle size={18} className="shrink-0 mt-0.5" />
             <div className="space-y-2">
               <p className="font-medium">{error}</p>
-              {error.includes("Missing Gemini API Key") && (
-                <button 
-                  onClick={handleManualKeyTrigger}
-                  className="flex items-center gap-1.5 px-3 py-1 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-xs font-bold transition-colors"
-                >
-                  <Key size={12} />
-                  Connect API Key
-                </button>
+              {error.includes("trigger a new 'Redeploy'") && (
+                <div className="flex flex-col gap-2 mt-2 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
+                  <p className="text-xs text-slate-300">
+                    <strong>Note:</strong> On Vercel, adding an environment variable does not automatically update your live app. You must go to your Project Dashboard, click 'Deployments', and select 'Redeploy' on your latest version.
+                  </p>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-xs font-bold transition-colors w-fit"
+                  >
+                    <RefreshCw size={12} />
+                    Refresh App
+                  </button>
+                </div>
               )}
             </div>
           </div>

@@ -7,8 +7,8 @@ const getAIInstance = () => {
   const apiKey = process.env.API_KEY;
   
   if (!apiKey || apiKey === "undefined" || apiKey.trim() === "") {
-    console.error("Gemini API Key check failed. process.env.API_KEY is:", apiKey);
-    throw new Error("Missing Gemini API Key. Please ensure 'API_KEY' is set in your environment variables and the app is redeployed.");
+    console.error("Gemini API Key check failed. process.env.API_KEY is missing or undefined.");
+    throw new Error("Missing Gemini API Key. Since you updated it in Vercel, you MUST trigger a new 'Redeploy' for the changes to take effect in the browser.");
   }
   
   return new GoogleGenAI({ apiKey });
