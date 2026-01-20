@@ -1,0 +1,7 @@
+{
+  "name": "LEIVIP Inventory Intelligence",
+  "description": "AI-powered inventory analysis and visual merchandising optimization for B2B clothing retailers.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
