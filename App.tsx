@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AppStep, CapturedPhoto, InventoryItem, MerchandisingSuggestion } from './types';
 import Layout from './components/Layout';
 import CaptureScreen from './screens/CaptureScreen';
@@ -60,6 +60,8 @@ const App: React.FC = () => {
       } catch (err) {
         console.error("Failed to open key selector", err);
       }
+    } else {
+      alert("Please ensure your Gemini API_KEY is correctly set in your Vercel project settings and the app is redeployed.");
     }
   };
 
@@ -111,7 +113,7 @@ const App: React.FC = () => {
                   className="flex items-center gap-1.5 px-3 py-1 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-xs font-bold transition-colors"
                 >
                   <Key size={12} />
-                  Select API Key
+                  Connect API Key
                 </button>
               )}
             </div>
