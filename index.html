@@ -10,21 +10,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
-        // Robust process shim for browser environments
-        window.global = window;
-        window.process = window.process || { env: {} };
+        // Ensure process.env exists without overwriting existing values
+        window.process = window.process || {};
         window.process.env = window.process.env || {};
-        
-        // Use a getter to dynamically check for the key, avoiding hard-coded empty strings 
-        // that can trigger SDK validation errors prematurely.
-        if (typeof window.process.env.API_KEY === 'undefined') {
-            Object.defineProperty(window.process.env, 'API_KEY', {
-                get: function() { 
-                    // This will return undefined or the actual value if injected later
-                    return window._VITE_API_KEY_ || ""; 
-                }
-            });
-        }
+        window.global = window;
     </script>
     <style>
         body {
@@ -34,11 +23,8 @@
             margin: 0;
             padding: 0;
         }
-        /* Ensure the root is visible */
         #root {
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
         .no-scrollbar::-webkit-scrollbar {
             display: none;

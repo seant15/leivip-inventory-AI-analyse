@@ -3,10 +3,14 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { InventoryItem, MerchandisingSuggestion, AnalysisResult } from "../types";
 
 const getAIInstance = () => {
+  // Directly access the environment variable as per requirements
   const apiKey = process.env.API_KEY;
-  if (!apiKey || apiKey.trim() === "") {
-    throw new Error("Missing Gemini API Key. Please set the API_KEY environment variable in your deployment settings.");
+  
+  if (!apiKey || apiKey === "undefined" || apiKey.trim() === "") {
+    console.error("Gemini API Key check failed. process.env.API_KEY is:", apiKey);
+    throw new Error("Missing Gemini API Key. Please ensure 'API_KEY' is set in your environment variables and the app is redeployed.");
   }
+  
   return new GoogleGenAI({ apiKey });
 };
 
@@ -93,7 +97,7 @@ export const analyzeInventory = async (photos: { base64: string }[]): Promise<An
     };
   } catch (error) {
     console.error("Failed to parse Gemini response:", error);
-    throw new Error("Analysis failed. Please try with clearer photos.");
+    throw new Error("Analysis failed. The AI response was not in the expected format.");
   }
 };
 
@@ -118,9 +122,12 @@ export const generateMockup = async (suggestion: MerchandisingSuggestion): Promi
     }
   });
 
-  for (const part of response.candidates[0].content.parts) {
-    if (part.inlineData) {
-      return `data:image/png;base64,${part.inlineData.data}`;
+  const candidates = response.candidates || [];
+  if (candidates.length > 0 && candidates[0].content && candidates[0].content.parts) {
+    for (const part of candidates[0].content.parts) {
+      if (part.inlineData) {
+        return `data:image/png;base64,${part.inlineData.data}`;
+      }
     }
   }
   
