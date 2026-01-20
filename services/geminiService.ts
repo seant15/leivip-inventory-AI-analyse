@@ -3,12 +3,12 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { InventoryItem, MerchandisingSuggestion, AnalysisResult } from "../types";
 
 const getAIInstance = () => {
-  // Directly access the environment variable as per requirements
+  // Use the mandatory process.env.API_KEY exclusively
   const apiKey = process.env.API_KEY;
   
-  if (!apiKey || apiKey === "undefined" || apiKey.trim() === "") {
-    console.error("Gemini API Key check failed. process.env.API_KEY is missing or undefined.");
-    throw new Error("Missing Gemini API Key. Since you updated it in Vercel, you MUST trigger a new 'Redeploy' for the changes to take effect in the browser.");
+  if (!apiKey || apiKey === "undefined") {
+    console.error("Critical: process.env.API_KEY is missing from the environment context.");
+    throw new Error("API configuration is incomplete. Please ensure the key is correctly linked.");
   }
   
   return new GoogleGenAI({ apiKey });
@@ -96,8 +96,8 @@ export const analyzeInventory = async (photos: { base64: string }[]): Promise<An
       }))
     };
   } catch (error) {
-    console.error("Failed to parse Gemini response:", error);
-    throw new Error("Analysis failed. The AI response was not in the expected format.");
+    console.error("AI Response Parsing Error:", error);
+    throw new Error("Analysis failed to complete. Please try with clearer photos.");
   }
 };
 
@@ -131,5 +131,5 @@ export const generateMockup = async (suggestion: MerchandisingSuggestion): Promi
     }
   }
   
-  throw new Error("Failed to generate image mockup.");
+  throw new Error("Visual generation failed.");
 };

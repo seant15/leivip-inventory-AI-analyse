@@ -8,7 +8,7 @@ import AnalysisScreen from './screens/AnalysisScreen';
 import ReorganizeScreen from './screens/ReorganizeScreen';
 import ReportScreen from './screens/ReportScreen';
 import { analyzeInventory } from './services/geminiService';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<AppStep>(AppStep.CAPTURE);
@@ -38,7 +38,7 @@ const App: React.FC = () => {
       setSuggestions(result.suggestions);
       setCurrentStep(AppStep.ANALYSIS);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "An unexpected error occurred.";
+      const msg = err instanceof Error ? err.message : "An unexpected service error occurred.";
       console.error("Analysis Error:", msg);
       setError(msg);
       setCurrentStep(AppStep.CAPTURE);
@@ -89,26 +89,10 @@ const App: React.FC = () => {
   return (
     <Layout currentStep={currentStep} onNavigate={navigateTo}>
       {error && (
-        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-400 text-sm animate-in slide-in-from-top duration-300">
-          <div className="flex items-start gap-3">
-            <AlertCircle size={18} className="shrink-0 mt-0.5" />
-            <div className="space-y-2">
-              <p className="font-medium">{error}</p>
-              {error.includes("trigger a new 'Redeploy'") && (
-                <div className="flex flex-col gap-2 mt-2 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
-                  <p className="text-xs text-slate-300">
-                    <strong>Note:</strong> On Vercel, adding an environment variable does not automatically update your live app. You must go to your Project Dashboard, click 'Deployments', and select 'Redeploy' on your latest version.
-                  </p>
-                  <button 
-                    onClick={() => window.location.reload()}
-                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-xs font-bold transition-colors w-fit"
-                  >
-                    <RefreshCw size={12} />
-                    Refresh App
-                  </button>
-                </div>
-              )}
-            </div>
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/40 rounded-xl text-red-300 text-xs animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle size={16} className="shrink-0" />
+            <p className="font-medium">{error}</p>
           </div>
         </div>
       )}
