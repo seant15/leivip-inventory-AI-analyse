@@ -10,8 +10,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
-        // Critical shim for process.env to prevent ReferenceErrors in browser environments during Vite-based deployments
+        // Critical shim for process.env to prevent ReferenceErrors in browser environments
         window.process = window.process || { env: {} };
+        // If API_KEY is not defined by the environment, ensure it doesn't cause a crash on instantiation
+        if (typeof window.process.env.API_KEY === 'undefined') {
+            window.process.env.API_KEY = ''; 
+        }
         window.global = window;
     </script>
     <style>
