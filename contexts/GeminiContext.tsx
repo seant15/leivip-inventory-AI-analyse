@@ -14,7 +14,11 @@ export const GeminiProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   useEffect(() => {
     // 1. Try to get from environment (injected by Vite)
-    const envKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+    // 0. Try standard Vite env var (Best practice for Vercel/Vite)
+    const viteKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+    // 1. Try to get from environment (injected by Vite or fallback)
+    const envKey = viteKey || process.env.GEMINI_API_KEY || process.env.API_KEY;
     
     // 2. Try to get from localStorage
     const storedKey = localStorage.getItem('gemini_api_key');
