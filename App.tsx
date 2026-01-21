@@ -9,8 +9,11 @@ import ReorganizeScreen from './screens/ReorganizeScreen';
 import ReportScreen from './screens/ReportScreen';
 import { analyzeInventory } from './services/geminiService';
 import { AlertCircle } from 'lucide-react';
+import { GeminiProvider, useGemini } from './contexts/GeminiContext';
+import { ApiKeyModal } from './components/ApiKeyModal';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const { apiKey } = useGemini();
   const [currentStep, setCurrentStep] = useState<AppStep>(AppStep.CAPTURE);
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -28,12 +31,16 @@ const App: React.FC = () => {
 
   const startAnalysis = async () => {
     if (photos.length === 0) return;
-    
+    if (!apiKey) {
+      setError("API Key is missing. Please configure it.");
+      return;
+    }
+
     setCurrentStep(AppStep.PROCESSING);
     setError(null);
 
     try {
-      const result = await analyzeInventory(photos);
+      const result = await analyzeInventory(photos, apiKey);
       setItems(result.items);
       setSuggestions(result.suggestions);
       setCurrentStep(AppStep.ANALYSIS);
@@ -56,9 +63,9 @@ const App: React.FC = () => {
     switch (currentStep) {
       case AppStep.CAPTURE:
         return (
-          <CaptureScreen 
-            photos={photos} 
-            onAddPhoto={handleAddPhoto} 
+          <CaptureScreen
+            photos={photos}
+            onAddPhoto={handleAddPhoto}
             onRemovePhoto={handleRemovePhoto}
             onAnalyze={startAnalysis}
           />
@@ -67,16 +74,17 @@ const App: React.FC = () => {
         return <ProcessingScreen />;
       case AppStep.ANALYSIS:
         return (
-          <AnalysisScreen 
-            items={items} 
-            onContinue={() => setCurrentStep(AppStep.REORGANIZE)} 
+          <AnalysisScreen
+            items={items}
+            onContinue={() => setCurrentStep(AppStep.REORGANIZE)}
           />
         );
       case AppStep.REORGANIZE:
         return (
-          <ReorganizeScreen 
-            suggestions={suggestions} 
-            onComplete={() => setCurrentStep(AppStep.REPORT)} 
+          <ReorganizeScreen
+            suggestions={suggestions}
+            onComplete={() => setCurrentStep(AppStep.REPORT)}
+            apiKey={apiKey || ''}
           />
         );
       case AppStep.REPORT:
@@ -98,6 +106,15 @@ const App: React.FC = () => {
       )}
       {renderScreen()}
     </Layout>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <GeminiProvider>
+      <ApiKeyModal />
+      <AppContent />
+    </GeminiProvider>
   );
 };
 

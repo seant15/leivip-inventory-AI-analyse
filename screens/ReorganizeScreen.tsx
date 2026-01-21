@@ -7,9 +7,10 @@ import { generateMockup } from '../services/geminiService';
 interface ReorganizeScreenProps {
   suggestions: MerchandisingSuggestion[];
   onComplete: () => void;
+  apiKey: string;
 }
 
-const ReorganizeScreen: React.FC<ReorganizeScreenProps> = ({ suggestions: initialSuggestions, onComplete }) => {
+const ReorganizeScreen: React.FC<ReorganizeScreenProps> = ({ suggestions: initialSuggestions, onComplete, apiKey }) => {
   const [suggestions, setSuggestions] = useState<MerchandisingSuggestion[]>(initialSuggestions);
   const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
 
@@ -18,8 +19,8 @@ const ReorganizeScreen: React.FC<ReorganizeScreenProps> = ({ suggestions: initia
 
     setLoadingIds(prev => new Set(prev).add(suggestion.id));
     try {
-      const mockupUrl = await generateMockup(suggestion);
-      setSuggestions(prev => prev.map(s => 
+      const mockupUrl = await generateMockup(suggestion, apiKey);
+      setSuggestions(prev => prev.map(s =>
         s.id === suggestion.id ? { ...s, mockupImage: mockupUrl, isApplied: true } : s
       ));
     } catch (error) {
@@ -50,19 +51,18 @@ const ReorganizeScreen: React.FC<ReorganizeScreenProps> = ({ suggestions: initia
       <div className="space-y-4">
         {suggestions.map((suggestion) => {
           const isLoading = loadingIds.has(suggestion.id);
-          
+
           return (
             <div key={suggestion.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 relative overflow-hidden group hover:border-indigo-500/50 transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/5 blur-3xl -mr-16 -mt-16 group-hover:bg-indigo-600/10 transition-colors" />
-              
+
               <div className="flex justify-between items-start">
                 <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
                   <Layout size={20} />
                 </div>
                 <div className="flex gap-2">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                    suggestion.impact === 'High' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
-                  }`}>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${suggestion.impact === 'High' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
+                    }`}>
                     {suggestion.impact} Impact
                   </span>
                   {suggestion.isApplied && (
@@ -95,7 +95,7 @@ const ReorganizeScreen: React.FC<ReorganizeScreenProps> = ({ suggestions: initia
               </div>
 
               <div className="flex gap-2">
-                <button 
+                <button
                   onClick={() => handleApply(suggestion)}
                   disabled={isLoading || !!suggestion.mockupImage}
                   className="flex-1 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -109,7 +109,7 @@ const ReorganizeScreen: React.FC<ReorganizeScreenProps> = ({ suggestions: initia
                   )}
                 </button>
                 {!suggestion.mockupImage && (
-                  <button 
+                  <button
                     onClick={() => handleSkip(suggestion.id)}
                     className="px-4 py-2 text-xs font-bold bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-1"
                   >
@@ -132,7 +132,7 @@ const ReorganizeScreen: React.FC<ReorganizeScreenProps> = ({ suggestions: initia
         )}
       </div>
 
-      <button 
+      <button
         onClick={onComplete}
         className="w-full py-4 bg-indigo-600 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-indigo-900/20"
       >

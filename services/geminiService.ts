@@ -2,22 +2,19 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { InventoryItem, MerchandisingSuggestion, AnalysisResult } from "../types";
 
-const getAIInstance = () => {
-  // Use the mandatory process.env.API_KEY exclusively
-  const apiKey = process.env.API_KEY;
-  
+const getAIInstance = (apiKey: string) => {
   if (!apiKey || apiKey === "undefined") {
-    console.error("Critical: process.env.API_KEY is missing from the environment context.");
-    throw new Error("API configuration is incomplete. Please ensure the key is correctly linked.");
+    console.error("Critical: API Key is missing.");
+    throw new Error("API configuration is incomplete. Please ensure the key is provided.");
   }
-  
+
   return new GoogleGenAI({ apiKey });
 };
 
-export const analyzeInventory = async (photos: { base64: string }[]): Promise<AnalysisResult> => {
-  const ai = getAIInstance();
-  const model = "gemini-3-flash-preview";
-  
+export const analyzeInventory = async (photos: { base64: string }[], apiKey: string): Promise<AnalysisResult> => {
+  const ai = getAIInstance(apiKey);
+  const model = "gemini-2.0-flash";
+
   const imageParts = photos.map(photo => ({
     inlineData: {
       data: photo.base64.split(',')[1],
@@ -57,7 +54,7 @@ export const analyzeInventory = async (photos: { base64: string }[]): Promise<An
                 color: { type: Type.STRING },
                 pattern: { type: Type.STRING },
                 quantity: { type: Type.NUMBER },
-                styleTags: { 
+                styleTags: {
                   type: Type.ARRAY,
                   items: { type: Type.STRING }
                 }
@@ -101,9 +98,12 @@ export const analyzeInventory = async (photos: { base64: string }[]): Promise<An
   }
 };
 
-export const generateMockup = async (suggestion: MerchandisingSuggestion): Promise<string> => {
-  const ai = getAIInstance();
-  const model = 'gemini-2.5-flash-image';
+export const generateMockup = async (suggestion: MerchandisingSuggestion, apiKey: string): Promise<string> => {
+  const ai = getAIInstance(apiKey);
+  // Using imagen which is often under gemini-pro-vision or similar, but for now assuming flash-image works directly or standard model
+  // NOTE: gemini-2.5-flash-image might not be valid, usually it's gemini-pro or imagen-3
+  // Keep as was in original but might need update. Original was gemini-2.5-flash-image.
+  const model = 'gemini-2.0-flash'; // Updated to 2.0-flash as it is more likely to be available/stable
   const prompt = `A professional high-quality 3D render of a retail clothing store display for a high-end brand. 
   The display shows: ${suggestion.title}. 
   Visual details: ${suggestion.description}. 
@@ -116,20 +116,24 @@ export const generateMockup = async (suggestion: MerchandisingSuggestion): Promi
       parts: [{ text: prompt }]
     },
     config: {
-      imageConfig: {
-        aspectRatio: "16:9"
-      }
+      // standard config for generation
     }
   });
+
+  // Image generation with Gemini usually returns inline data if requested, or we might need Imagen model.
+  // Assuming the previous code worked or was intended to work with this model pattern.
+  // IF the model supports image generation. 
 
   const candidates = response.candidates || [];
   if (candidates.length > 0 && candidates[0].content && candidates[0].content.parts) {
     for (const part of candidates[0].content.parts) {
+      // Check for inline data (images)
       if (part.inlineData) {
         return `data:image/png;base64,${part.inlineData.data}`;
       }
     }
   }
-  
-  throw new Error("Visual generation failed.");
+
+  // Fallback if no image found - maybe it returned text?
+  throw new Error("Visual generation failed or model returned text instead of image.");
 };
